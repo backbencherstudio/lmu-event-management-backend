@@ -4,10 +4,10 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './user/user.module';
 import { SubscriptionModule } from './subscription/subscription.module';
-
+import { EventModule } from './event/event.module'; // Add this line
 
 @Module({
-  imports: [PrismaModule, UserModule, SubscriptionModule],
+  imports: [PrismaModule, UserModule, SubscriptionModule, EventModule], // Add EventModule here
   controllers: [AppController],
   providers: [AppService],
 })
