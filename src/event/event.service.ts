@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class EventService {
@@ -20,15 +21,64 @@ export class EventService {
     });
   }
 
-  async findAll() {
-    const events = await this.prisma.event.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+// event.service.ts
+async findAll(query: any) {
+  const {
+    page = '1',
+    limit = '10',
+    search,
+    startDate,
+    endDate,
+  } = query;
 
-    return events;
-  }
+  const pageNum = parseInt(page, 10);
+  const limitNum = parseInt(limit, 10);
+  const skip = (pageNum - 1) * limitNum;
+
+  const where: Prisma.EventWhereInput = {
+    AND: [
+      search
+        ? {
+            OR: [
+              { name: { contains: search, mode: 'insensitive' } },
+              { description: { contains: search, mode: 'insensitive' } },
+            ],
+          }
+        : {},
+      startDate && endDate
+        ? {
+            startDate: {
+              gte: new Date(startDate),
+            },
+            endDate: {
+              lte: new Date(endDate),
+            },
+          }
+        : {},
+    ],
+  };
+
+  const [events, total] = await Promise.all([
+    this.prisma.event.findMany({
+      where,
+      skip,
+      take: limitNum,
+      orderBy: { createdAt: 'desc' },
+    }),
+    this.prisma.event.count({ where }),
+  ]);
+
+  return {
+    data: events,
+    meta: {
+      total,
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil(total / limitNum),
+    },
+  };
+}
+
 
   async findOne(id: number) {
     const event = await this.prisma.event.findUnique({
