@@ -10,6 +10,8 @@ async function bootstrap() {
         'http://192.168.4.31:3000',
         'http://192.168.4.31:*',
         'http://localhost:3000',
+        'http://192.168.4.3:3001',
+        'http://192.168.4.3:3000'
       ],
       credentials: true,
     },
