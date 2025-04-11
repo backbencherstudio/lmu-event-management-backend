@@ -10,7 +10,7 @@ async function bootstrap() {
         'http://192.168.4.31:3000',
         'http://192.168.4.31:*',
         'http://localhost:3000',
-        'https://lmu-event-management-frontend-akuy6y82z-bbsfullstacks-projects.vercel.app',
+        'https://lmu-event-management-frontend.vercel.app',
         'https://lmu-event-management-frontend-akuy6y82z-bbsfullstacks-projects.vercel.app'
       ],
       credentials: true,
