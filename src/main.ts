@@ -4,7 +4,16 @@ import * as morgan from 'morgan';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    cors: {
+      origin: [
+        'http://192.168.4.31:3000',
+        'http://192.168.4.31:*',
+        'http://localhost:3000',
+      ],
+      credentials: true,
+    },
+  });
   const port = process.env.PORT || 3001;
   app.use(morgan('dev'));
 

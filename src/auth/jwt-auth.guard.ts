@@ -30,7 +30,6 @@ import {
         }
   
         (req as any).user = decoded;
-        console.log('Decoded JWT:', decoded);
   
         return true;
       } catch (error) {
