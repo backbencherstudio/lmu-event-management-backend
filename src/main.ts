@@ -25,7 +25,7 @@ async function bootstrap() {
       credentials: true,
     },
   });
-  const port = process.env.PORT || 3002;
+  const port = process.env.PORT || 3000;
   app.use(morgan('dev'));
 
   app.useGlobalPipes(
