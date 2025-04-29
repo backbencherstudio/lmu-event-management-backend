@@ -9,7 +9,7 @@ export class EventService {
   constructor(private prisma: PrismaService) {}
 
   async create(createEventDto: CreateEventDto) {
-    return this.prisma.event.create({
+    const event = await this.prisma.event.create({
       data: {
         name: createEventDto.name,
         description: createEventDto.description,
@@ -19,7 +19,13 @@ export class EventService {
         endTime: createEventDto.endTime,
       },
     });
+  
+    return {
+      success: true,
+      data: event,
+    };
   }
+  
 
 // event.service.ts
 async findAll(query: any) {
