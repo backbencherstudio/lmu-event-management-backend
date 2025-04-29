@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as morgan from 'morgan'; 
+import * as morgan from 'morgan';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
@@ -18,7 +18,9 @@ async function bootstrap() {
         'http://localhost:3002',
         'https://lmu-event-management-frontend.vercel.app',
         'https://lmu-event-management-frontend-akuy6y82z-bbsfullstacks-projects.vercel.app',
-        'https://681067f068397093e176c73d--bizevents.netlify.app'
+        'https://681067f068397093e176c73d--bizevents.netlify.app',
+        'http://localhost:3000',
+        'http://192.168.4.31:3000',
       ],
       credentials: true,
     },
@@ -26,16 +28,20 @@ async function bootstrap() {
   const port = process.env.PORT || 3002;
   app.use(morgan('dev'));
 
-  app.useGlobalPipes(new ValidationPipe({
-    exceptionFactory: (errors) => {
-      return new BadRequestException({
-        success: false,
-        message: errors.map(error => Object.values(error?.constraints as object)).flat()[0],
-        statusCode: 400,
-        error: 'Bad Request'
-      });
-    }
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      exceptionFactory: (errors) => {
+        return new BadRequestException({
+          success: false,
+          message: errors
+            .map((error) => Object.values(error?.constraints as object))
+            .flat()[0],
+          statusCode: 400,
+          error: 'Bad Request',
+        });
+      },
+    }),
+  );
   await app.listen(port);
 }
 
