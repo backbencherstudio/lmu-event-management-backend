@@ -17,7 +17,8 @@ async function bootstrap() {
         'http://localhost:3001',
         'http://localhost:3002',
         'https://lmu-event-management-frontend.vercel.app',
-        'https://lmu-event-management-frontend-akuy6y82z-bbsfullstacks-projects.vercel.app'
+        'https://lmu-event-management-frontend-akuy6y82z-bbsfullstacks-projects.vercel.app',
+        'https://681067f068397093e176c73d--bizevents.netlify.app'
       ],
       credentials: true,
     },
