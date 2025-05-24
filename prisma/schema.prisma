@@ -44,8 +44,28 @@ model Event {
   timezone       String   @default("America/Cayman")
 }
 
+ model Event_request {
+  id             Int      @id @default(autoincrement())
+  name           String
+  email          String
+  phone          String
+  description    String
+  startDate      DateTime
+  endDate        DateTime
+  startTime      String
+  endTime        String
+  createdAt      DateTime @default(now())
+  timezone       String   @default("America/Cayman")
+  status         Status   @default(PENDING)
+ }
 
 enum Role {
   ADMIN
   USER
+}
+
+enum Status {
+  PENDING
+  APPROVED
+  REJECTED
 }

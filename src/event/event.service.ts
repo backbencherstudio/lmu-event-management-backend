@@ -23,79 +23,78 @@ export class EventService {
         endDate,
         startTime: createEventDto.startTime,
         endTime: createEventDto.endTime,
-        timezone: 'America/Cayman'
+        timezone: 'America/Cayman',
       },
     });
-  
+
     return {
       success: true,
       data: {
         ...event,
         startDate: toZonedTime(event.startDate, 'America/Cayman'),
-        endDate: toZonedTime(event.endDate, 'America/Cayman')
+        endDate: toZonedTime(event.endDate, 'America/Cayman'),
       },
     };
   }
-  
 
-// event.service.ts
-async findAll(query: any) {
-  const {
-    page = '1',
-    limit = '10',
-    search,
-    startDate,
-    endDate,
-  } = query;
+  // event.service.ts
+  async findAll(query: any) {
+    const { page = '1', limit = '10', search, startDate, endDate } = query;
 
-  const pageNum = parseInt(page, 10);
-  const limitNum = parseInt(limit, 10);
-  const skip = (pageNum - 1) * limitNum;
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    const skip = (pageNum - 1) * limitNum;
 
-  const where: Prisma.EventWhereInput = {
-    AND: [
-      search
-        ? {
-            OR: [
-              { name: { contains: search, mode: 'insensitive' } },
-              { description: { contains: search, mode: 'insensitive' } },
-            ],
-          }
-        : {},
-      startDate && endDate
-        ? {
-            startDate: {
-              gte: new Date(startDate),
-            },
-            endDate: {
-              lte: new Date(endDate),
-            },
-          }
-        : {},
-    ],
-  };
+    const where: Prisma.EventWhereInput = {
+      AND: [
+        search
+          ? {
+              OR: [
+                { name: { contains: search, mode: 'insensitive' } },
+                { description: { contains: search, mode: 'insensitive' } },
+              ],
+            }
+          : {},
+        startDate && endDate
+          ? {
+              startDate: {
+                gte: new Date(startDate),
+              },
+              endDate: {
+                lte: new Date(endDate),
+              },
+            }
+          : {},
+      ],
+    };
 
-  const [events, total] = await Promise.all([
-    this.prisma.event.findMany({
-      where,
-      skip,
-      take: limitNum,
-      orderBy: { createdAt: 'desc' },
-    }),
-    this.prisma.event.count({ where }),
-  ]);
+    const [events, total] = await Promise.all([
+      this.prisma.event.findMany({
+        where,
+        skip,
+        take: limitNum,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.event.count({ where }),
+    ]);
 
-  return {
-    data: events,
-    meta: {
-      total,
-      page: pageNum,
-      limit: limitNum,
-      totalPages: Math.ceil(total / limitNum),
-    },
-  };
-}
+    // Convert dates to Cayman timezone for each event
+    const eventsWithLocalTime = events.map((event) => ({
+      ...event,
+      startDate: toZonedTime(event.startDate, 'America/Cayman'),
+      endDate: toZonedTime(event.endDate, 'America/Cayman'),
+    }));
 
+    return {
+      data: eventsWithLocalTime,
+      meta: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
+      },
+    };
+  }
 
   async findOne(id: number) {
     const event = await this.prisma.event.findUnique({
@@ -106,7 +105,12 @@ async findAll(query: any) {
       throw new NotFoundException('Event not found');
     }
 
-    return event;
+    // Convert dates to Cayman timezone
+    return {
+      ...event,
+      startDate: toZonedTime(event.startDate, 'America/Cayman'),
+      endDate: toZonedTime(event.endDate, 'America/Cayman'),
+    };
   }
 
   async update(id: number, updateEventDto: UpdateEventDto) {
