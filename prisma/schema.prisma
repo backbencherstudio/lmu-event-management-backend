@@ -41,6 +41,7 @@ model Event {
   startTime      String
   endTime        String
   createdAt      DateTime @default(now())
+  timezone       String   @default("America/Cayman")
 }
 
 
