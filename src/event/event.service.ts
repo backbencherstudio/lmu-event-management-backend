@@ -3,26 +3,37 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
+import { format, parseISO } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 
 @Injectable()
 export class EventService {
   constructor(private prisma: PrismaService) {}
 
   async create(createEventDto: CreateEventDto) {
+    // Parse the dates and convert to UTC
+    const startDate = parseISO(createEventDto.startDate);
+    const endDate = parseISO(createEventDto.endDate);
+
     const event = await this.prisma.event.create({
       data: {
         name: createEventDto.name,
         description: createEventDto.description,
-        startDate: new Date(createEventDto.startDate),
-        endDate: new Date(createEventDto.endDate),
+        startDate,
+        endDate,
         startTime: createEventDto.startTime,
         endTime: createEventDto.endTime,
+        timezone: 'America/Cayman'
       },
     });
   
     return {
       success: true,
-      data: event,
+      data: {
+        ...event,
+        startDate: toZonedTime(event.startDate, 'America/Cayman'),
+        endDate: toZonedTime(event.endDate, 'America/Cayman')
+      },
     };
   }
   
