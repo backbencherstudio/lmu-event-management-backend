@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Param, UseGuards, ParseIntPipe, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, ParseIntPipe, Delete, Query } from '@nestjs/common';
 import { EventRequestService } from './event-request.service';
 import { CreateEventRequestDto } from './dto/create-event-request.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { EventRequestQueryDto } from './dto/event-request-query.dto';
 
 @Controller('event-request')
 export class EventRequestController {
@@ -14,8 +15,8 @@ export class EventRequestController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  findAll() {
-    return this.eventRequestService.findAll();
+  findAll(@Query() query: EventRequestQueryDto) {
+    return this.eventRequestService.findAll(query);
   }
 
   @Post(':id/approve')

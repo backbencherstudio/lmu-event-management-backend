@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateEventRequestDto } from './dto/create-event-request.dto';
 import { parseISO } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
+import { Prisma, Status } from '@prisma/client';
 
 @Injectable()
 export class EventRequestService {
@@ -31,10 +32,27 @@ export class EventRequestService {
     };
   }
 
-  async findAll() {
-    const eventRequests = await this.prisma.event_request.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
+  async findAll(query: {
+    page?: number;
+    limit?: number;
+    status?: Status;
+  }) {
+    const { page = 1, limit = 10, status } = query;
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.Event_requestWhereInput = {
+      ...(status && { status }),
+    };
+
+    const [eventRequests, total] = await Promise.all([
+      this.prisma.event_request.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.event_request.count({ where }),
+    ]);
 
     return {
       data: eventRequests.map(request => ({
@@ -42,6 +60,12 @@ export class EventRequestService {
         startDate: toZonedTime(request.startDate, 'America/Cayman'),
         endDate: toZonedTime(request.endDate, 'America/Cayman'),
       })),
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
     };
   }
 
