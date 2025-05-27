@@ -4,6 +4,8 @@ import { CreateEventRequestDto } from './dto/create-event-request.dto';
 import { parseISO } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import { Prisma, Status } from '@prisma/client';
+import sendEmail from '../utils/email.util';
+import { EventRequestConfirmation } from '../utils/email-templates';
 
 @Injectable()
 export class EventRequestService {
@@ -22,6 +24,13 @@ export class EventRequestService {
       },
     });
 
+    // Send email asynchronously without waiting
+    sendEmail(
+      createEventRequestDto.email,
+      'Event Request Confirmation',
+      EventRequestConfirmation(createEventRequestDto),
+    );
+
     return {
       success: true,
       data: {
@@ -32,11 +41,7 @@ export class EventRequestService {
     };
   }
 
-  async findAll(query: {
-    page?: number;
-    limit?: number;
-    status?: Status;
-  }) {
+  async findAll(query: { page?: number; limit?: number; status?: Status }) {
     const { page = 1, limit = 10, status } = query;
     const skip = (page - 1) * limit;
 
@@ -55,7 +60,7 @@ export class EventRequestService {
     ]);
 
     return {
-      data: eventRequests.map(request => ({
+      data: eventRequests.map((request) => ({
         ...request,
         startDate: toZonedTime(request.startDate, 'America/Cayman'),
         endDate: toZonedTime(request.endDate, 'America/Cayman'),
