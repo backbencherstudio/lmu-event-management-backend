@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseIntPipe, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  ParseIntPipe,
+  Query,
+} from '@nestjs/common';
 import { EventService } from './event.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';

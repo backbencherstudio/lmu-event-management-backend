@@ -1,9 +1,18 @@
-import { Controller, Post, Get, Delete, Body, Query, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Delete,
+  Body,
+  Query,
+  Param,
+  ParseIntPipe,
+  UseGuards,
+} from '@nestjs/common';
 import { SubscriptionService } from './subscription.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { SubscriptionQueryDto } from './dto/subscription-query.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-
 
 @Controller('subscription')
 export class SubscriptionController {
@@ -19,13 +28,12 @@ export class SubscriptionController {
   // findAll() {
   //   return this.subscriptionService.findAll();
   // }
-  
-  @Get()
-@UseGuards(JwtAuthGuard)
-findAll(@Query() query: SubscriptionQueryDto) {
-  return this.subscriptionService.findAll(query);
-}
 
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  findAll(@Query() query: SubscriptionQueryDto) {
+    return this.subscriptionService.findAll(query);
+  }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)

@@ -1,4 +1,8 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -10,7 +14,7 @@ import * as jwt from 'jsonwebtoken';
 export class UserService {
   constructor(
     private prisma: PrismaService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
   ) {}
 
   async register(createUserDto: CreateUserDto) {
@@ -40,9 +44,8 @@ export class UserService {
       },
     });
 
-
     return {
-      ...user
+      ...user,
     };
   }
 
@@ -64,10 +67,10 @@ export class UserService {
       throw new NotFoundException('Invalid passwird');
     }
 
-    const payload = { 
-      id: user.id, 
+    const payload = {
+      id: user.id,
       email: user.email,
-      role: user.role 
+      role: user.role,
     };
 
     const token = await this.jwtService.signAsync(payload);
@@ -77,7 +80,7 @@ export class UserService {
       name: user.name,
       email: user.email,
       role: user.role,
-      token: token
+      token: token,
     };
   }
 

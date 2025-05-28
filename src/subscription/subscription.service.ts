@@ -1,4 +1,8 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { SubscriptionQueryDto } from './dto/subscription-query.dto';
@@ -24,25 +28,22 @@ export class SubscriptionService {
 
   // async findAll() {
   //   console.log('findAll');
-    
+
   //   const subscriptions = await this.prisma.subscription.findMany({
   //     orderBy: { createdAt: 'desc' },
   //   });
-  
+
   //   console.log(subscriptions);
-    
+
   //   return subscriptions;
   // }
-  
-
 
   // GET /subscriptions?page=1&limit=10&search=someSearchTerm&startDate=2025-01-01&endDate=2025-12-31
-
 
   async findAll(query: SubscriptionQueryDto) {
     const { page = 1, limit = 10, search, startDate, endDate } = query;
     const skip = (page - 1) * limit;
-  
+
     const where: Prisma.SubscriptionWhereInput = {
       AND: [
         search
@@ -65,7 +66,7 @@ export class SubscriptionService {
           : {},
       ],
     };
-  
+
     const [subscriptions, total] = await Promise.all([
       this.prisma.subscription.findMany({
         where: where,
@@ -77,7 +78,7 @@ export class SubscriptionService {
         where: where,
       }),
     ]);
-  
+
     return {
       data: subscriptions,
       meta: {
@@ -88,9 +89,6 @@ export class SubscriptionService {
       },
     };
   }
-  
-  
-  
 
   async delete(id: number) {
     const subscription = await this.prisma.subscription.findUnique({
