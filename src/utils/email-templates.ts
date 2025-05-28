@@ -3,88 +3,170 @@ import { CreateEventRequestDto } from '../event-request/dto/create-event-request
 export const EventRequestConfirmation = (
   data: CreateEventRequestDto,
 ): string => {
-  const formattedDate = new Date().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-
-  const formatTime = (time: string) => {
-    return time.replace(/([AP]M)/, ' $1').toLowerCase();
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
   };
 
+  const formatTime = (timeString: string) => {
+    const date = new Date(timeString);
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const startDate = new Date(data.startDate);
+  const endDate = new Date(data.endDate);
+  const isSameDay = startDate.toDateString() === endDate.toDateString();
+
   return `
-    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 700px; margin: 0 auto; padding: 20px; background-color: #f4f6f8; color: #333;">
-      <!-- Container -->
-      <div style="background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden;">
-
-        <!-- Header -->
-        <div style="background-color: #004aad; color: white; padding: 30px 25px; text-align: left;">
-          <h1 style="margin: 0; font-size: 24px; font-weight: 600;">Cayman Biz Events</h1>
-          <p style="margin: 5px 0 0; font-size: 14px; opacity: 0.9;">Your event request has been received</p>
-        </div>
-
-        <!-- Body -->
-        <div style="padding: 30px;">
-          
-          <!-- Date & Ref -->
-          <div style="text-align: right; margin-bottom: 20px;">
-            <p style="margin: 0; font-size: 14px; color: #666;">${formattedDate}</p>
-            <p style="margin: 0; font-size: 13px; color: #999;">Ref #: ${Math.floor(100000 + Math.random() * 900000)}</p>
-          </div>
-
-          <!-- Greeting -->
-          <h2 style="font-size: 20px; margin-bottom: 15px;">Dear ${data.name},</h2>
-          <p style="line-height: 1.6; margin-bottom: 25px;">
-            Thank you for reaching out to us at Cayman Biz Events. We’re excited that you're considering our venue for your upcoming event.
-            Your request has been successfully received and is now being reviewed by our team.
+    <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; color: #333333; background-color: #f8f8f8;">
+      <!-- Main Container -->
+      <div style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+        
+        <!-- Header with Branding -->
+        <div style="background: #005f87; padding: 30px; text-align: center;">
+          <img src="https://caymanbizevents.com/logo.png" alt="Cayman Biz Events" width="180" style="max-width: 180px;">
+          <p style="margin: 15px 0 0 0; font-size: 16px; color: #ffffff; letter-spacing: 0.5px; font-weight: 300;">
+            PREMIER EVENT VENUE IN THE CAYMAN ISLANDS
           </p>
-
-          <!-- Details Box -->
-          <div style="background-color: #f9f9f9; border-left: 4px solid #004aad; padding: 20px; margin-bottom: 25px; border-radius: 6px;">
-            <h3 style="margin-top: 0; font-size: 16px; color: #004aad; margin-bottom: 15px;">Event Details</h3>
-            <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
-              <tr><td style="padding: 6px 0;"><strong>Contact Name:</strong></td><td style="padding: 6px 0;">${data.name}</td></tr>
-              <tr><td style="padding: 6px 0;"><strong>Email:</strong></td><td style="padding: 6px 0;">${data.email}</td></tr>
-              <tr><td style="padding: 6px 0;"><strong>Phone:</strong></td><td style="padding: 6px 0;">${data.phone}</td></tr>
-              <tr><td style="padding: 6px 0;"><strong>Dates:</strong></td><td style="padding: 6px 0;">${data.startDate}${data.endDate !== data.startDate ? ` to ${data.endDate}` : ''}</td></tr>
-              <tr><td style="padding: 6px 0;"><strong>Time:</strong></td><td style="padding: 6px 0;">${formatTime(data.startTime)} to ${formatTime(data.endTime)}</td></tr>
-              <tr><td style="padding: 6px 0; vertical-align: top;"><strong>Description:</strong></td><td style="padding: 6px 0;">${data.description}</td></tr>
-            </table>
-          </div>
-
-          <!-- Next Steps -->
-          <h3 style="color: #004aad; margin-bottom: 10px;">What Happens Next?</h3>
-          <ol style="padding-left: 20px; line-height: 1.6;">
-            <li style="margin-bottom: 8px;">Our events coordinator will reach out within 24 hours.</li>
-            <li style="margin-bottom: 8px;">We'll confirm availability and discuss any special requirements.</li>
-            <li style="margin-bottom: 8px;">You’ll receive a detailed proposal including pricing and options.</li>
-            <li>We’ll finalize details once we receive your confirmation and deposit.</li>
-          </ol>
-
-          <!-- Contact Info -->
-          <div style="margin-top: 30px; background-color: #f0f4ff; padding: 20px; border-radius: 6px;">
-            <h4 style="margin: 0 0 10px 0; color: #004aad;">Need Help?</h4>
-            <p style="margin: 0 0 10px 0; font-size: 14px;">
-              📞 Call us: (345) 555-0123<br/>
-              📧 Email: events@caymanbizevents.com<br/>
-              🕒 Hours: Mon - Sun | 9 AM - 7 PM
+        </div>
+        
+        <!-- Confirmation Content -->
+        <div style="padding: 40px 30px;">
+          <!-- Greeting -->
+          <div style="margin-bottom: 25px;">
+            <p style="margin: 0 0 10px 0; font-size: 16px; color: #333333;">Dear ${data.name},</p>
+            <p style="line-height: 1.6; margin: 0; font-size: 15px; color: #555555;">
+              Thank you for choosing Cayman Biz Events for your upcoming celebration. We're delighted to confirm we've received your event request and our team is reviewing your details.
             </p>
           </div>
-
+          
+          <!-- Confirmation Box -->
+          <div style="margin: 30px 0; padding: 25px; background: #f5f9fa; border-radius: 6px; border-left: 4px solid #0099cc;">
+            <h2 style="font-size: 18px; margin: 0 0 20px 0; color: #005f87; font-weight: 600;">YOUR EVENT REQUEST</h2>
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+              <tr>
+                <td style="padding: 10px 0; width: 120px; vertical-align: top; color: #666666;"><strong>Contact:</strong></td>
+                <td style="padding: 10px 0; color: #333333;">${data.name}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 0; vertical-align: top; color: #666666;"><strong>Event Date:</strong></td>
+                <td style="padding: 10px 0; color: #333333;">
+                  ${formatDate(data.startDate)}${!isSameDay ? ` to ${formatDate(data.endDate)}` : ''}
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 0; vertical-align: top; color: #666666;"><strong>Event Time:</strong></td>
+                <td style="padding: 10px 0; color: #333333;">
+                  ${formatTime(data.startDate)} - ${formatTime(data.endDate)}
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 0; vertical-align: top; color: #666666;"><strong>Event Type:</strong></td>
+                <td style="padding: 10px 0; color: #333333;">${data.description || 'Not specified'}</td>
+              </tr>
+            </table>
+          </div>
+          
+          <!-- Next Steps -->
+          <div style="margin-bottom: 30px;">
+            <h2 style="font-size: 18px; margin: 0 0 20px 0; color: #005f87; font-weight: 600;">NEXT STEPS</h2>
+            <div style="display: flex; margin-bottom: 20px; align-items: flex-start;">
+              <div style="background: #0099cc; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; margin-right: 15px; flex-shrink: 0; font-size: 12px; font-weight: bold;">1</div>
+              <div style="flex-grow: 1;">
+                <p style="margin: 0 0 5px 0; font-weight: 600; color: #005f87;">Initial Review</p>
+                <p style="margin: 0; font-size: 14px; color: #666666; line-height: 1.5;">Our event specialist will contact you within 24 hours to discuss your requirements.</p>
+              </div>
+            </div>
+            <div style="display: flex; margin-bottom: 20px; align-items: flex-start;">
+              <div style="background: #0099cc; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; margin-right: 15px; flex-shrink: 0; font-size: 12px; font-weight: bold;">2</div>
+              <div style="flex-grow: 1;">
+                <p style="margin: 0 0 5px 0; font-weight: 600; color: #005f87;">Custom Proposal</p>
+                <p style="margin: 0; font-size: 14px; color: #666666; line-height: 1.5;">You'll receive a tailored proposal with venue options, menus, and pricing.</p>
+              </div>
+            </div>
+            <div style="display: flex; align-items: flex-start;">
+              <div style="background: #0099cc; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; margin-right: 15px; flex-shrink: 0; font-size: 12px; font-weight: bold;">3</div>
+              <div style="flex-grow: 1;">
+                <p style="margin: 0 0 5px 0; font-weight: 600; color: #005f87;">Finalize Booking</p>
+                <p style="margin: 0; font-size: 14px; color: #666666; line-height: 1.5;">Secure your date with a signed contract and deposit payment.</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Contact Information -->
+          <div style="background: #f5f9fa; border-radius: 6px; padding: 25px; margin-bottom: 30px;">
+            <h2 style="font-size: 18px; margin: 0 0 20px 0; color: #005f87; font-weight: 600;">CONTACT OUR TEAM</h2>
+            <div style="display: flex; margin-bottom: 15px;">
+              <div style="width: 24px; margin-right: 15px; text-align: center;">
+                <span style="color: #0099cc;">📧</span>
+              </div>
+              <div>
+                <p style="margin: 0 0 5px 0; font-weight: 600; color: #005f87;">Email</p>
+                <p style="margin: 0; font-size: 14px; color: #666666;">
+                  <a href="mailto:events@caymanbizevents.com" style="color: #0099cc; text-decoration: none;">events@caymanbizevents.com</a>
+                </p>
+              </div>
+            </div>
+            <div style="display: flex; margin-bottom: 15px;">
+              <div style="width: 24px; margin-right: 15px; text-align: center;">
+                <span style="color: #0099cc;">📞</span>
+              </div>
+              <div>
+                <p style="margin: 0 0 5px 0; font-weight: 600; color: #005f87;">Phone</p>
+                <p style="margin: 0; font-size: 14px; color: #666666;">
+                  <a href="tel:3451234567" style="color: #0099cc; text-decoration: none;">(345) 123-4567</a>
+                </p>
+              </div>
+            </div>
+            <div style="display: flex;">
+              <div style="width: 24px; margin-right: 15px; text-align: center;">
+                <span style="color: #0099cc;">🕒</span>
+              </div>
+              <div>
+                <p style="margin: 0 0 5px 0; font-weight: 600; color: #005f87;">Hours</p>
+                <p style="margin: 0; font-size: 14px; color: #666666;">Daily, 9:00 AM - 10:00 PM</p>
+              </div>
+            </div>
+          </div>
+          
           <!-- Closing -->
-          <p style="margin-top: 30px; line-height: 1.6;">
-            Thank you again for choosing Cayman Biz Events. We look forward to helping make your occasion truly memorable.
-          </p>
-          <p style="margin-top: 20px; font-weight: 600;">Best regards,<br/><strong>The Cayman Biz Events Team</strong></p>
+          <div style="text-align: center;">
+            <p style="margin: 0 0 20px 0; font-size: 15px; color: #555555; line-height: 1.6;">
+              We look forward to helping you create an unforgettable experience at our venue.
+            </p>
+            <p style="margin: 0; font-weight: 600; color: #005f87;">The Cayman Biz Events Team</p>
+          </div>
         </div>
-
+        
         <!-- Footer -->
-        <div style="background-color: #f1f3f5; padding: 15px 25px; font-size: 12px; color: #888; text-align: center;">
-          <p style="margin: 0;">This is an automated confirmation email. Please do not reply directly.</p>
-          <p style="margin: 5px 0 0;">© ${new Date().getFullYear()} Cayman Biz Events. All rights reserved.</p>
-          <p style="margin: 10px 0 0;">
-            <a href="https://caymanbizevents.com " style="color: #004aad; text-decoration: none;">Visit our website</a>
+        <div style="background: #003d5a; padding: 25px; text-align: center; color: #ffffff; font-size: 13px;">
+          <div style="margin-bottom: 20px;">
+            <a href="https://caymanbizevents.com" style="margin: 0 10px; display: inline-block;">
+              <img src="https://caymanbizevents.com/icons/website.png" alt="Website" width="24" style="vertical-align: middle; margin-right: 5px;"> Website
+            </a>
+            <a href="https://caymanbizevents.com/gallery" style="margin: 0 10px; display: inline-block;">
+              <img src="https://caymanbizevents.com/icons/gallery.png" alt="Gallery" width="24" style="vertical-align: middle; margin-right: 5px;"> Gallery
+            </a>
+            <a href="https://caymanbizevents.com/menus" style="margin: 0 10px; display: inline-block;">
+              <img src="https://caymanbizevents.com/icons/menu.png" alt="Menus" width="24" style="vertical-align: middle; margin-right: 5px;"> Menus
+            </a>
+            <a href="https://caymanbizevents.com/contact" style="margin: 0 10px; display: inline-block;">
+              <img src="https://caymanbizevents.com/icons/contact.png" alt="Contact" width="24" style="vertical-align: middle; margin-right: 5px;"> Contact
+            </a>
+          </div>
+          <p style="margin: 0 0 10px 0; color: rgba(255,255,255,0.7);">
+            Cayman Biz Events • Grand Cayman, Cayman Islands
+          </p>
+          <p style="margin: 0; color: rgba(255,255,255,0.7);">
+            &copy; ${new Date().getFullYear()} Cayman Biz Events. All rights reserved.
           </p>
         </div>
       </div>
