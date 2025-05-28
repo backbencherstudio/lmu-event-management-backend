@@ -41,16 +41,12 @@ export class EventRequestService {
     };
   }
 
-  async findAll(query: { page?: number; limit?: number; status?: Status | Status[] }) {
+  async findAll(query: { page?: number; limit?: number; status?: Status }) {
     const { page = 1, limit = 10, status } = query;
     const skip = (page - 1) * limit;
 
     const where: Prisma.Event_requestWhereInput = {
-      ...(status && {
-        status: Array.isArray(status)
-          ? { in: status }
-          : status
-      }),
+      ...(status && { status }),
     };
 
     const [eventRequests, total] = await Promise.all([
@@ -76,7 +72,7 @@ export class EventRequestService {
         totalPages: Math.ceil(total / limit),
       },
     };
-}
+  }
 
   async approve(id: number) {
     const eventRequest = await this.prisma.event_request.findUnique({
