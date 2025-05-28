@@ -14,6 +14,6 @@ export class EventRequestQueryDto {
   limit?: number;
 
   @IsOptional()
-  @IsEnum(Status)
-  status?: Status;
+  @IsEnum(Status, { each: true })
+  status?: Status | Status[];
 }
