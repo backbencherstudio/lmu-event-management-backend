@@ -27,15 +27,15 @@ export class CreateEventRequestDto {
 
   @IsNotEmpty()
   @IsString()
-  @Matches(/^(0?[1-9]|1[0-2]):[0-5][0-9] [AP]M$/, {
-    message: 'Start time must be in format: HH:MM AM/PM',
+  @Matches(/^([01][0-9]|2[0-3]):[0-5][0-9]$/, {
+    message: 'Start time must be in 24-hour format (HH:mm), e.g., 13:30',
   })
   startTime: string;
 
   @IsNotEmpty()
   @IsString()
-  @Matches(/^(0?[1-9]|1[0-2]):[0-5][0-9] [AP]M$/, {
-    message: 'End time must be in format: HH:MM AM/PM',
+  @Matches(/^([01][0-9]|2[0-3]):[0-5][0-9]$/, {
+    message: 'End time must be in 24-hour format (HH:mm), e.g., 15:30',
   })
   endTime: string;
 }

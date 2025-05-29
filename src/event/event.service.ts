@@ -1,45 +1,79 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
-import { format, parseISO } from 'date-fns';
+import { parseISO, isValid } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 
 @Injectable()
 export class EventService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createEventDto: CreateEventDto) {
-    // Parse the dates and convert to UTC
-    const startDate = parseISO(createEventDto.startDate);
-    const endDate = parseISO(createEventDto.endDate);
-
-    const event = await this.prisma.event.create({
-      data: {
-        name: createEventDto.name,
-        description: createEventDto.description,
-        startDate,
-        endDate,
-        startTime: createEventDto.startTime,
-        endTime: createEventDto.endTime,
-        timezone: 'America/Cayman',
-      },
-    });
-
-    return {
-      success: true,
-      data: {
-        ...event,
-        startDate: toZonedTime(event.startDate, 'America/Cayman'),
-        endDate: toZonedTime(event.endDate, 'America/Cayman'),
-      },
-    };
+  private validateAndParseDate(dateStr: string, timeStr: string): Date {
+    try {
+      const date = parseISO(`${dateStr}T${timeStr}:00`);
+      if (!isValid(date)) {
+        throw new BadRequestException(`Invalid date or time: ${dateStr} ${timeStr}`);
+      }
+      return date;
+    } catch (error) {
+      throw new BadRequestException(`Invalid date or time format: ${dateStr} ${timeStr}`);
+    }
   }
 
-  // event.service.ts
+  async create(createEventDto: CreateEventDto) {
+    try {
+      const timezone = createEventDto.timezone || 'America/Cayman';
+      
+      // Validate and parse dates
+      const startDateTime = this.validateAndParseDate(createEventDto.startDate, createEventDto.startTime);
+      const endDateTime = this.validateAndParseDate(createEventDto.endDate, createEventDto.endTime);
+
+      // Validate that end date is not before start date
+      if (endDateTime < startDateTime) {
+        throw new BadRequestException('End date/time cannot be before start date/time');
+      }
+
+      const event = await this.prisma.event.create({
+        data: {
+          name: createEventDto.name,
+          description: createEventDto.description,
+          startDate: startDateTime,
+          endDate: endDateTime,
+          startTime: createEventDto.startTime,
+          endTime: createEventDto.endTime,
+          timezone,
+        },
+      });
+
+      // Convert dates back to the event's timezone for response
+      const zonedStartDate = toZonedTime(event.startDate, event.timezone);
+      const zonedEndDate = toZonedTime(event.endDate, event.timezone);
+
+      return {
+        success: true,
+        data: {
+          ...event,
+          startDate: zonedStartDate,
+          endDate: zonedEndDate,
+        },
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P1001') {
+          throw new InternalServerErrorException('Database connection error. Please try again in a few moments.');
+        }
+      }
+      throw new InternalServerErrorException('An error occurred while creating the event');
+    }
+  }
+
   async findAll(query: any) {
-    const { page = '1', limit = '10', search, startDate, endDate } = query;
+    const { page = '1', limit = '10', search, startDate, endDate, timezone = 'America/Cayman' } = query;
 
     const pageNum = parseInt(page, 10);
     const limitNum = parseInt(limit, 10);
@@ -58,10 +92,10 @@ export class EventService {
         startDate && endDate
           ? {
               startDate: {
-                gte: new Date(startDate),
+                gte: this.validateAndParseDate(startDate, '00:00'),
               },
               endDate: {
-                lte: new Date(endDate),
+                lte: this.validateAndParseDate(endDate, '23:59'),
               },
             }
           : {},
@@ -78,11 +112,11 @@ export class EventService {
       this.prisma.event.count({ where }),
     ]);
 
-    // Convert dates to Cayman timezone for each event
+    // Convert dates to requested timezone for each event
     const eventsWithLocalTime = events.map((event) => ({
       ...event,
-      startDate: toZonedTime(event.startDate, 'America/Cayman'),
-      endDate: toZonedTime(event.endDate, 'America/Cayman'),
+      startDate: toZonedTime(event.startDate, event.timezone || timezone),
+      endDate: toZonedTime(event.endDate, event.timezone || timezone),
     }));
 
     return {
@@ -105,11 +139,11 @@ export class EventService {
       throw new NotFoundException('Event not found');
     }
 
-    // Convert dates to Cayman timezone
+    // Convert dates to event's timezone
     return {
       ...event,
-      startDate: toZonedTime(event.startDate, 'America/Cayman'),
-      endDate: toZonedTime(event.endDate, 'America/Cayman'),
+      startDate: toZonedTime(event.startDate, event.timezone),
+      endDate: toZonedTime(event.endDate, event.timezone),
     };
   }
 
@@ -123,19 +157,39 @@ export class EventService {
     }
 
     const updateData: any = { ...updateEventDto };
+    const timezone = updateEventDto.timezone || event.timezone;
 
-    // Only convert dates if they are provided
+    // Validate and update dates if provided
     if (updateEventDto.startDate) {
-      updateData.startDate = new Date(updateEventDto.startDate);
+      updateData.startDate = this.validateAndParseDate(
+        updateEventDto.startDate,
+        updateEventDto.startTime || event.startTime
+      );
     }
     if (updateEventDto.endDate) {
-      updateData.endDate = new Date(updateEventDto.endDate);
+      updateData.endDate = this.validateAndParseDate(
+        updateEventDto.endDate,
+        updateEventDto.endTime || event.endTime
+      );
     }
 
-    return this.prisma.event.update({
+    // Validate that end date is not before start date
+    const finalStartDate = updateData.startDate || event.startDate;
+    const finalEndDate = updateData.endDate || event.endDate;
+    if (finalEndDate < finalStartDate) {
+      throw new BadRequestException('End date/time cannot be before start date/time');
+    }
+
+    const updatedEvent = await this.prisma.event.update({
       where: { id },
       data: updateData,
     });
+
+    return {
+      ...updatedEvent,
+      startDate: toZonedTime(updatedEvent.startDate, updatedEvent.timezone),
+      endDate: toZonedTime(updatedEvent.endDate, updatedEvent.timezone),
+    };
   }
 
   async remove(id: number) {

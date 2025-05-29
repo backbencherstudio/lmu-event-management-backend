@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEventRequestDto } from './dto/create-event-request.dto';
-import { parseISO } from 'date-fns';
+import { parseISO, isValid } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import { Prisma, Status } from '@prisma/client';
 import sendEmail from '../utils/email.util';
@@ -11,34 +11,59 @@ import { EventRequestConfirmation } from '../utils/email-templates';
 export class EventRequestService {
   constructor(private prisma: PrismaService) {}
 
+  private validateAndParseDate(dateStr: string, timeStr: string): Date {
+    try {
+      const date = parseISO(`${dateStr}T${timeStr}:00`);
+      if (!isValid(date)) {
+        throw new BadRequestException(`Invalid date or time: ${dateStr} ${timeStr}`);
+      }
+      return date;
+    } catch (error) {
+      throw new BadRequestException(`Invalid date or time format: ${dateStr} ${timeStr}`);
+    }
+  }
+
   async create(createEventRequestDto: CreateEventRequestDto) {
-    const startDate = parseISO(createEventRequestDto.startDate);
-    const endDate = parseISO(createEventRequestDto.endDate);
+    try {
+      // Validate and parse dates
+      const startDateTime = this.validateAndParseDate(createEventRequestDto.startDate, createEventRequestDto.startTime);
+      const endDateTime = this.validateAndParseDate(createEventRequestDto.endDate, createEventRequestDto.endTime);
 
-    const eventRequest = await this.prisma.event_request.create({
-      data: {
-        ...createEventRequestDto,
-        startDate,
-        endDate,
-        status: 'PENDING',
-      },
-    });
+      // Validate that end date is not before start date
+      if (endDateTime < startDateTime) {
+        throw new BadRequestException('End date/time cannot be before start date/time');
+      }
 
-    // Send email asynchronously without waiting
-    sendEmail(
-      createEventRequestDto.email,
-      'Event Request Confirmation',
-      EventRequestConfirmation(createEventRequestDto),
-    );
+      const eventRequest = await this.prisma.event_request.create({
+        data: {
+          ...createEventRequestDto,
+          startDate: startDateTime,
+          endDate: endDateTime,
+          status: 'PENDING',
+        },
+      });
 
-    return {
-      success: true,
-      data: {
-        ...eventRequest,
-        startDate: toZonedTime(eventRequest.startDate, 'America/Cayman'),
-        endDate: toZonedTime(eventRequest.endDate, 'America/Cayman'),
-      },
-    };
+      // Send email asynchronously without waiting
+      sendEmail(
+        createEventRequestDto.email,
+        'Event Request Confirmation',
+        EventRequestConfirmation(createEventRequestDto),
+      );
+
+      return {
+        success: true,
+        data: {
+          ...eventRequest,
+          startDate: toZonedTime(eventRequest.startDate, 'America/Cayman'),
+          endDate: toZonedTime(eventRequest.endDate, 'America/Cayman'),
+        },
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException('An error occurred while creating the event request');
+    }
   }
 
   async findAll(query: { page?: number; limit?: number; status?: Status }) {
