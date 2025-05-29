@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsDateString, Matches } from 'class-validator';
+import { IsNotEmpty, IsString, IsDateString, Matches, IsOptional } from 'class-validator';
 
 export class CreateEventRequestDto {
   @IsNotEmpty()
@@ -9,7 +9,7 @@ export class CreateEventRequestDto {
   @IsString()
   email: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   phone: string;
 

@@ -48,7 +48,7 @@ model Event {
   id             Int      @id @default(autoincrement())
   name           String
   email          String
-  phone          String
+  phone          String?
   description    String
   startDate      DateTime
   endDate        DateTime
