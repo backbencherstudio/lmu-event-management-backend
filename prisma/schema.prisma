@@ -35,8 +35,8 @@ model Subscription {
 model Event {
   id             Int      @id @default(autoincrement())
   name           String
-  description    String
-  startDate      DateTime
+  description    String    @db.Text
+  startDate      DateTime 
   endDate        DateTime
   startTime      String
   endTime        String
@@ -49,7 +49,7 @@ model Event {
   name           String
   email          String
   phone          String?
-  description    String
+  description    String    @db.Text
   startDate      DateTime
   endDate        DateTime
   startTime      String
