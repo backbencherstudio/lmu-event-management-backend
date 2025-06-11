@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as morgan from 'morgan';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -21,12 +22,17 @@ async function bootstrap() {
         'https://681067f068397093e176c73d--bizevents.netlify.app',
         'http://localhost:3000',
         'http://192.168.4.31:3000',
+        'http://192.168.4.3:3001',
       ],
       credentials: true,
     },
   });
   const port = process.env.PORT || 3000;
   app.use(morgan('dev'));
+
+  // Increase request size limits
+  app.use(express.json({ limit: '10000mb' }));
+  app.use(express.urlencoded({ limit: '10000mb', extended: true }));
 
   app.useGlobalPipes(
     new ValidationPipe({

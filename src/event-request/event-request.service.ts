@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEventRequestDto } from './dto/create-event-request.dto';
 import { parseISO, isValid } from 'date-fns';
@@ -15,23 +19,35 @@ export class EventRequestService {
     try {
       const date = parseISO(`${dateStr}T${timeStr}:00`);
       if (!isValid(date)) {
-        throw new BadRequestException(`Invalid date or time: ${dateStr} ${timeStr}`);
+        throw new BadRequestException(
+          `Invalid date or time: ${dateStr} ${timeStr}`,
+        );
       }
       return date;
     } catch (error) {
-      throw new BadRequestException(`Invalid date or time format: ${dateStr} ${timeStr}`);
+      throw new BadRequestException(
+        `Invalid date or time format: ${dateStr} ${timeStr}`,
+      );
     }
   }
 
   async create(createEventRequestDto: CreateEventRequestDto) {
     try {
       // Validate and parse dates
-      const startDateTime = this.validateAndParseDate(createEventRequestDto.startDate, createEventRequestDto.startTime);
-      const endDateTime = this.validateAndParseDate(createEventRequestDto.endDate, createEventRequestDto.endTime);
+      const startDateTime = this.validateAndParseDate(
+        createEventRequestDto.startDate,
+        createEventRequestDto.startTime,
+      );
+      const endDateTime = this.validateAndParseDate(
+        createEventRequestDto.endDate,
+        createEventRequestDto.endTime,
+      );
 
       // Validate that end date is not before start date
       if (endDateTime < startDateTime) {
-        throw new BadRequestException('End date/time cannot be before start date/time');
+        throw new BadRequestException(
+          'End date/time cannot be before start date/time',
+        );
       }
 
       const eventRequest = await this.prisma.event_request.create({
@@ -62,7 +78,8 @@ export class EventRequestService {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      throw new BadRequestException('An error occurred while creating the event request');
+      throw error;
+      // throw new BadRequestException('An error occurred while creating the event request');
     }
   }
 
