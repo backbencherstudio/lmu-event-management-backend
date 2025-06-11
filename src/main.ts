@@ -23,6 +23,7 @@ async function bootstrap() {
         'http://localhost:3000',
         'http://192.168.4.31:3000',
         'http://192.168.4.3:3001',
+        "https://caymanbizevents.com"
       ],
       credentials: true,
     },
