@@ -60,11 +60,11 @@ export class EventRequestService {
       });
 
       // Send email asynchronously without waiting
-      sendEmail(
-        createEventRequestDto.email,
-        'Event Request Confirmation',
-        EventRequestConfirmation(createEventRequestDto),
-      );
+      // sendEmail(
+      //   createEventRequestDto.email,
+      //   'Event Request Confirmation',
+      //   EventRequestConfirmation(createEventRequestDto),
+      // );
 
       return {
         success: true,

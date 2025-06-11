@@ -69,3 +69,10 @@ enum Status {
   APPROVED
   REJECTED
 }
+
+//   GNU nano 4.8                                                                                          .env                                                                                                     DATABASE_URL="postgresql://postgres:root@localhost:5432/lmu"
+// PORT=4000
+// JWT_SECRET=D7FG3J3hhh
+
+// node_mailer_user=tqmhosain@gmail.com
+// NODE_MAILER_PASSWORD=idyt bqln ttmk stzf
